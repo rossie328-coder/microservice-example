@@ -1,6 +1,9 @@
 package org.example.controller.mqtt;
 
 import org.eclipse.paho.client.mqttv3.*;
+
+import javax.net.ssl.SSLSocketFactory;
+import java.io.InputStream;
 import java.util.Objects;
 
 /**
@@ -8,7 +11,7 @@ import java.util.Objects;
  */
 public class Publisher {
 
-    public static final String BROKER_URL = "tcp://localhost:8883";
+    public static final String BROKER_URL = "ssl://localhost:8883";
     private String topic;
     private String message;
     private MqttClient client;
@@ -30,7 +33,7 @@ public class Publisher {
         if(message != null && topic != null && deviceId > 0) {
             this.message = message;
             this.topic = topic;
-            this.clientId = Long.toString(deviceId) + "-pub";
+            this.clientId = Long.toString(deviceId);
         }
 
         try {
@@ -44,15 +47,21 @@ public class Publisher {
     }
 
     /**
-     * Meotodo per avviare il publisher
+     * Metodo per avviare il publisher
      */
     public void start() {
 
         try {
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(false);
-            // options.setWill(client.getTopic("intern/bar"), "I'm gone :(".getBytes(), 0, false);
 
+            // Imposto un socket factory che accetti tutti i certificati digitali
+            TLSUtil tlsUtil = new TLSUtil();
+            options.setSocketFactory(tlsUtil.trustAllSocketFactory());
+
+            // Imposto username e password
+            options.setUserName(Credentials.getMqttUsername());
+            options.setPassword(Credentials.getMqttPassword().toCharArray());
             client.connect(options);
 
             final MqttTopic topic = client.getTopic(this.topic);
@@ -60,9 +69,8 @@ public class Publisher {
 
             topic.publish(new MqttMessage(messageByte));
 
-            client.disconnect();
 
-        } catch (MqttException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }

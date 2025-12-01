@@ -6,25 +6,22 @@ package org.example.controller.messageDispatcher.DTO;
  */
 public class ServerMessage {
     private long deviceId;
-    private String plateNummber;
+    private String plateNumber;
     private String timestamp;
-    private String request;
 
     /**
      * Costruttore
      * @param deviceId identificatore del dispositivo
-     * @param plateNummber numero di targa
-     * @param request messaggio testuale
+     * @param plateNumber numero di targa
      */
-    public ServerMessage(long deviceId, String plateNummber, String request, String timestamp) {
-        if(plateNummber.isEmpty() || request.isEmpty() || timestamp.isEmpty()) {
+    public ServerMessage(long deviceId, String plateNumber, String timestamp) {
+        if(plateNumber.isEmpty() || timestamp.isEmpty()) {
             throw new IllegalArgumentException("NumberPlate and request arguments cannot be empty");
         }
-        if(String.valueOf(deviceId).length() == 10) {
+        if(String.valueOf(deviceId).length() == 6) {
             this.deviceId = deviceId;
-            this.plateNummber = plateNummber;
+            this.plateNumber = plateNumber;
             this.timestamp = timestamp;
-            this.request = request;
         }
     }
 }

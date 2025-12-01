@@ -1,5 +1,7 @@
 package org.example.controller.messageDispatcher;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.example.controller.messageDispatcher.DTO.BarCameraMessage;
 import org.example.controller.messageDispatcher.DTO.ServerMessage;
 import org.example.controller.messageDispatcher.DTO.TicketMachineMessage;
@@ -8,11 +10,13 @@ import com.google.gson.Gson;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
+
 /**
  * Classe per creare messaggi da inoltrare al broker MQTT.
  */
 public class MessageDispatcher {
     private String mqttBroker;
+    private static final Logger logger = LogManager.getLogger(MessageDispatcher.class);
 
     /**
      * Costruttore
@@ -36,9 +40,13 @@ public class MessageDispatcher {
             Gson gson = new Gson();
             TicketMachineMessage message = new TicketMachineMessage(deviceId, serial);
             String msg = gson.toJson(message);
+            String topic = String.format("system/entrance/manual/%s/intern/ticket", deviceId);
             // istanzio il publisher e passo i parametri al costruttore
-            Publisher pub = new Publisher(mqttBroker, msg, "system/entrance/manual/%c/intern/ticket", deviceId);
+            Publisher pub = new Publisher(mqttBroker, msg, topic, deviceId);
             pub.start();
+
+            logger.info("Numero matricola: {}", serial);
+            logger.info("Numero di matricola inviato al dispositivo fisico sul topic {}", topic);
         }
     }
 
@@ -50,13 +58,18 @@ public class MessageDispatcher {
         if(String.valueOf(deviceId).length() == 6) {
             // serializzo il messaggio da inviare sul topic
             Gson gson = new Gson();
-            BarCameraMessage message = new BarCameraMessage(deviceId, "SendNumberPlate");
+            BarCameraMessage message = new BarCameraMessage(deviceId, "SendPlateNumber");
             String msg = gson.toJson(message);
+            logger.info(msg);
             // istanzio il publisher e passo i parametri al costruttore
-            Publisher pub = new Publisher(mqttBroker, msg, "system/entrance/manual/%c/intern/camera/request", deviceId);
+            String topic = String.format("system/entrance/manual/%s/intern/camera/request", deviceId);
+            logger.info("Topic: {}", topic);
+            Publisher pub = new Publisher(mqttBroker, msg, topic, deviceId);
             pub.start();
+            logger.info("Richiesta della targa inviata alla telecamera sul topic {}", topic);
         }
     }
+
 
     /**
      * Metodo per inviare un messaggio MQTT alla sbarra e richiedere la sua apertura
@@ -72,9 +85,11 @@ public class MessageDispatcher {
             Gson gson = new Gson();
             BarCameraMessage message = new BarCameraMessage(deviceId, text);
             String msg = gson.toJson(message);
+            String topic = String.format("system/entrance/manual/%s/intern/bar/request", deviceId);
             // istanzio il publisher e passo i parametri al costruttore
-            Publisher pub = new Publisher(mqttBroker, msg, "system/entrance/manual/%c/intern/bar/request", deviceId);
+            Publisher pub = new Publisher(mqttBroker, msg, topic, deviceId);
             pub.start();
+            logger.info("Richiesta inviata alla sbarra");
         }
     }
 
@@ -87,16 +102,16 @@ public class MessageDispatcher {
         if(plateNumber.isEmpty()) {
             throw new IllegalArgumentException("numberPlate cannot be empty");
         }
-        if(String.valueOf(deviceId).length() == 6 && String.valueOf(deviceId).length() == 7) {
+        if(String.valueOf(deviceId).length() == 6 && String.valueOf(plateNumber).length() == 7) {
             // serializzo il messaggio da inviare sul topic
             Gson gson = new Gson();
             Date now = new Date();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String timestamp = formatter.format(now);
-            ServerMessage message = new ServerMessage(deviceId, plateNumber, "entered", timestamp);
+            ServerMessage message = new ServerMessage(deviceId, plateNumber, timestamp);
             String msg = gson.toJson(message);
             // istanzio il publisher e passo i parametri al costruttore
-            Publisher pub = new Publisher(mqttBroker, msg, "system/entrance/manual/%c/server/data", deviceId);
+            Publisher pub = new Publisher(mqttBroker, msg, "system/entrance/manual/server/data", deviceId);
             pub.start();
         }
     }

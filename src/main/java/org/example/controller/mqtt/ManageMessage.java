@@ -2,6 +2,7 @@ package org.example.controller.mqtt;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.example.controller.mqtt.deserialization.DTO.BarCameraMessage;
+import org.example.controller.mqtt.deserialization.DTO.ServerMessage;
 import org.example.controller.mqtt.deserialization.Parse;
 import org.example.service.EntryTicketService;
 import java.util.Objects;
@@ -36,7 +37,8 @@ public class ManageMessage {
             throw new NullPointerException("Message reference cannot be null");
         }
         // deserializzazione messaaggio
-        BarCameraMessage messageParsed = parse.getParsedMessage(message, BarCameraMessage.class);
+        String barPayload = new String(message.getPayload());
+        BarCameraMessage messageParsed = parse.getParsedMessage(barPayload, BarCameraMessage.class);
 
         // invocazione metodi classe service
         service.manageCameraResponse(messageParsed.getDeviceId(), messageParsed.getText());
@@ -53,10 +55,24 @@ public class ManageMessage {
             throw new NullPointerException("Message reference cannot be null");
         }
         // deserializzazione messaggio
-        BarCameraMessage messageParsed = parse.getParsedMessage(message, BarCameraMessage.class);
+        String barCameraPayload = new String(message.getPayload());
+        BarCameraMessage messageParsed = parse.getParsedMessage(barCameraPayload, BarCameraMessage.class);
 
         // invocazione metodi classe service
         service.manageBarResponse(messageParsed.getDeviceId(), messageParsed.getText());
+
+    }
+
+    public void serverResponse(MqttMessage message) {
+        if(Objects.isNull(message)) {
+            throw new NullPointerException("Message reference cannot be null");
+        }
+        // deserializzazione messaggio
+        String serverPayload = new String(message.getPayload());
+        ServerMessage messageParsed = parse.getParsedMessage(serverPayload, ServerMessage.class);
+
+        // invocazione metodi classe service
+        service.serialNumberReceived(messageParsed.getDeviceId(), messageParsed.getSerial());
 
     }
 }

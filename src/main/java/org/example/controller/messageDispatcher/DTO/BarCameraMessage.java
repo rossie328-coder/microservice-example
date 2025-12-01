@@ -17,7 +17,7 @@ public class BarCameraMessage {
         if(text.isEmpty()) {
             throw new IllegalArgumentException("Text argument cannot be empty");
         }
-        if(String.valueOf(deviceId).length() == 10) {
+        if(String.valueOf(deviceId).length() == 6) {
             this.deviceId = deviceId;
             this.text = text;
         }
