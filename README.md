@@ -1,1 +1,3 @@
 # microservice-example
+
+This repository contains a microservice developed as part of a university project. The purpose of the project was to simulate a highway system, both from a managerial perspective (e.g., payment system, vehicle tracking) and a practical one (e.g., ticket issuance, gate opening). This particular microservice is aimed at handling ticket requests from the user. It delegates the storage and the serial number creation to the REST server, contacts the video-camera service to obtain the plate number and returns the ticket with all relevant informations (timestamp, serial number, plate number) to the user. The entire service was implemented following the service layer pattern to ensure a clear separation of responsibilities between modules. 
